@@ -10,7 +10,3 @@ services:
     envVars:
       - key: MISTRAL_API_KEY
         value: ICH2b9048GrX2WXz8JsgBunZDfgMLo0G
-    disk:
-      name: models
-      mountPath: /opt/render/models
-      sizeGB: 5
