@@ -8,9 +8,13 @@ load_dotenv()
 
 class NutritionAnalyzer:
     def __init__(self):
-        self.api_key = os.getenv("MISTRAL_API_KEY")
+        self.api_key = os.getenv("MISTRAL_API_KEY", "ICH2b9048GrX2WXz8JsgBunZDfgMLo0G")
         self.model = "mistral-medium"
-        self.client = Mistral(api_key=self.api_key) if self.api_key else None
+        if self.api_key:
+            self.client = Mistral(api_key=self.api_key)
+        else:
+            self.client = None
+            print("⚠️ Mistral API key not found")
     
     def test_api_connection(self):
         """Test Mistral API connection"""
@@ -28,7 +32,7 @@ class NutritionAnalyzer:
             return False, f"Mistral API connection failed: {str(e)}"
     
     def analyze_food_components(self, detected_foods):
-        """Analyze food nutrition using Mistral AI"""
+        """Analyze food nutrition"""
         if not self.client:
             return self._create_fallback_response(detected_foods)
         
@@ -49,7 +53,6 @@ class NutritionAnalyzer:
             return self._create_fallback_response(detected_foods)
     
     def _create_analysis_prompt(self, detected_foods):
-        """Create analysis prompt for Mistral"""
         return f"""
         ANALYZE FOOD NUTRITION - RESPOND WITH JSON ONLY:
         
@@ -57,7 +60,7 @@ class NutritionAnalyzer:
         
         Provide nutrition analysis in Indonesian with this JSON structure:
         {{
-            "food_type": "string (Makanan Berat/Ringan/Tidak Diketahui)",
+            "food_type": "string",
             "components": ["list", "of", "components"],
             "nutrition": {{
                 "protein": "Tinggi/Sedang/Rendah",
@@ -70,36 +73,31 @@ class NutritionAnalyzer:
             "recommendations": ["list", "of", "recommendations"]
         }}
         
-        Important: Respond with JSON only, no additional text.
+        Important: Respond with JSON only.
         """
     
     def _parse_response(self, content, detected_foods):
-        """Parse Mistral response"""
         try:
             json_match = re.search(r'\{.*\}', content, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())
         except:
             pass
-        
         return self._create_fallback_response(detected_foods)
     
     def _create_fallback_response(self, detected_foods):
-        """Create fallback response"""
         if not detected_foods:
             return {
                 "food_type": "Tidak Terdeteksi",
                 "components": [],
                 "nutrition": {
-                    "protein": "Tidak Diketahui",
-                    "carbs": "Tidak Diketahui",
-                    "fat": "Tidak Diketahui",
-                    "fiber": "Tidak Diketahui",
+                    "protein": "Tidak Diketahui", "carbs": "Tidak Diketahui",
+                    "fat": "Tidak Diketahui", "fiber": "Tidak Diketahui",
                     "vitamins": "Tidak Diketahui"
                 },
                 "deficiencies": ["Tidak ada makanan terdeteksi"],
                 "recommendations": [
-                    "Pastikan makanan terlihat jelas dalam foto",
+                    "Pastikan makanan terlihat jelas",
                     "Gunakan pencahayaan yang baik",
                     "Fokus pada satu jenis makanan"
                 ]
@@ -109,15 +107,13 @@ class NutritionAnalyzer:
             "food_type": "Makanan Terdeteksi",
             "components": detected_foods,
             "nutrition": {
-                "protein": "Sedang",
-                "carbs": "Tinggi",
-                "fat": "Sedang",
-                "fiber": "Rendah",
+                "protein": "Sedang", "carbs": "Tinggi",
+                "fat": "Sedang", "fiber": "Rendah",
                 "vitamins": "Sedang"
             },
             "deficiencies": ["Perlu analisis lebih detail"],
             "recommendations": [
-                "Konsultasi dengan ahli gizi untuk analisis lengkap",
+                "Konsultasi dengan ahli gizi",
                 "Variasi dengan buah dan sayuran",
                 "Perhatikan porsi makan"
             ]

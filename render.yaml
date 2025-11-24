@@ -9,5 +9,8 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: MISTRAL_API_KEY
-        value: your_mistral_api_key_here
-    autoDeploy: true
+        value: ICH2b9048GrX2WXz8JsgBunZDfgMLo0G
+    disk:
+      name: models
+      mountPath: /opt/render/models
+      sizeGB: 5
